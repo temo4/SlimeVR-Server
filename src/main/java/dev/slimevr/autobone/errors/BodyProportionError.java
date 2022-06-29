@@ -34,9 +34,14 @@ public class BodyProportionError implements IAutoBoneError {
 	public float getBodyProportionError(SkeletonConfig config) {
 		float neckLength = config.getConfig(SkeletonConfigValue.NECK);
 		float chestLength = config.getConfig(SkeletonConfigValue.CHEST);
-		float torsoLength = config.getConfig(SkeletonConfigValue.TORSO);
-		float legsLength = config.getConfig(SkeletonConfigValue.LEGS_LENGTH);
-		float kneeHeight = config.getConfig(SkeletonConfigValue.KNEE_HEIGHT);
+		float torsoLength = config.getConfig(SkeletonConfigValue.CHEST)
+			+ config.getConfig(SkeletonConfigValue.WAIST)
+			+ config.getConfig(SkeletonConfigValue.HIP);
+		float legsLength = config
+			.getConfig(SkeletonConfigValue.LEFT_UPPER_LEG)
+			+ config.getConfig(SkeletonConfigValue.LEFT_LOWER_LEG);
+		float kneeHeight = config
+			.getConfig(SkeletonConfigValue.LEFT_LOWER_LEG);
 
 		float chestTorso = FastMath.abs((chestLength / torsoLength) - chestTorsoRatio);
 		float legBody = FastMath.abs((legsLength / (torsoLength + neckLength)) - legBodyRatio);

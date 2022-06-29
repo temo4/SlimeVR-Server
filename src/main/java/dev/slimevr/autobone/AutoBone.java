@@ -79,9 +79,13 @@ public class AutoBone {
 	public final FastList<SkeletonConfigValue> legacyHeightConfigs = new FastList<SkeletonConfigValue>(
 		new SkeletonConfigValue[] {
 			SkeletonConfigValue.NECK,
-			SkeletonConfigValue.TORSO,
+			SkeletonConfigValue.CHEST,
+			SkeletonConfigValue.WAIST,
+			SkeletonConfigValue.HIP,
 
-			SkeletonConfigValue.LEGS_LENGTH,
+			// TODO how do we handle separate configs? Check both?
+			SkeletonConfigValue.LEFT_UPPER_LEG,
+			SkeletonConfigValue.LEFT_LOWER_LEG,
 		}
 	);
 
@@ -294,17 +298,17 @@ public class AutoBone {
 			Float chestOffset = offsets.get(BoneType.CHEST);
 			Float hipOffset = offsets.get(BoneType.HIP);
 			Float waistOffset = offsets.get(BoneType.WAIST);
-			if (chestOffset != null && hipOffset != null && waistOffset != null) {
-				configConsumer
-					.accept(SkeletonConfigValue.TORSO, chestOffset + hipOffset + waistOffset);
-			}
 
 			if (chestOffset != null) {
 				configConsumer.accept(SkeletonConfigValue.CHEST, chestOffset);
 			}
 
+			if (waistOffset != null) {
+				configConsumer.accept(SkeletonConfigValue.WAIST, waistOffset);
+			}
+
 			if (hipOffset != null) {
-				configConsumer.accept(SkeletonConfigValue.WAIST, hipOffset);
+				configConsumer.accept(SkeletonConfigValue.HIP, hipOffset);
 			}
 
 			Float hipWidthOffset = offsets.get(BoneType.LEFT_HIP);
@@ -324,13 +328,16 @@ public class AutoBone {
 			if (lowerLegOffset == null) {
 				lowerLegOffset = offsets.get(BoneType.RIGHT_LOWER_LEG);
 			}
-			if (upperLegOffset != null && lowerLegOffset != null) {
+			if (upperLegOffset != null) {
 				configConsumer
-					.accept(SkeletonConfigValue.LEGS_LENGTH, upperLegOffset + lowerLegOffset);
+					.accept(SkeletonConfigValue.LEFT_UPPER_LEG, upperLegOffset);
+				configConsumer
+					.accept(SkeletonConfigValue.RIGHT_UPPER_LEG, upperLegOffset);
 			}
 
 			if (lowerLegOffset != null) {
-				configConsumer.accept(SkeletonConfigValue.KNEE_HEIGHT, lowerLegOffset);
+				configConsumer.accept(SkeletonConfigValue.LEFT_LOWER_LEG, lowerLegOffset);
+				configConsumer.accept(SkeletonConfigValue.RIGHT_LOWER_LEG, lowerLegOffset);
 			}
 			return true;
 		} catch (Exception e) {

@@ -344,14 +344,19 @@ public class AutoBoneHandler {
 				skeletonConfigBuffer.setConfigs(autoBoneResults.configValues, null);
 
 				float neckLength = skeletonConfigBuffer.getConfig(SkeletonConfigValue.NECK);
-				float chestDistance = skeletonConfigBuffer.getConfig(SkeletonConfigValue.CHEST);
-				float torsoLength = skeletonConfigBuffer.getConfig(SkeletonConfigValue.TORSO);
+				float chestLength = skeletonConfigBuffer.getConfig(SkeletonConfigValue.CHEST);
+				float torsoLength = skeletonConfigBuffer.getConfig(SkeletonConfigValue.CHEST)
+					+ skeletonConfigBuffer.getConfig(SkeletonConfigValue.WAIST)
+					+ skeletonConfigBuffer.getConfig(SkeletonConfigValue.HIP);
 				float hipWidth = skeletonConfigBuffer.getConfig(SkeletonConfigValue.HIPS_WIDTH);
-				float legsLength = skeletonConfigBuffer.getConfig(SkeletonConfigValue.LEGS_LENGTH);
-				float kneeHeight = skeletonConfigBuffer.getConfig(SkeletonConfigValue.KNEE_HEIGHT);
+				float legsLength = skeletonConfigBuffer
+					.getConfig(SkeletonConfigValue.LEFT_UPPER_LEG)
+					+ skeletonConfigBuffer.getConfig(SkeletonConfigValue.LEFT_LOWER_LEG);
+				float kneeHeight = skeletonConfigBuffer
+					.getConfig(SkeletonConfigValue.LEFT_LOWER_LEG);
 
 				float neckTorso = neckLength / torsoLength;
-				float chestTorso = chestDistance / torsoLength;
+				float chestTorso = chestLength / torsoLength;
 				float torsoWaist = hipWidth / torsoLength;
 				float legTorso = legsLength / torsoLength;
 				float legBody = legsLength / (torsoLength + neckLength);

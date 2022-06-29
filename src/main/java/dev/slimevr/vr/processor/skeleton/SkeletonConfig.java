@@ -143,8 +143,8 @@ public class SkeletonConfig {
 		Float origVal = newValue != null ? configs.put(config, newValue) : configs.remove(config);
 
 		// Re-compute the affected offsets
-		if (computeOffsets && autoUpdateOffsets && config.affectedOffsets != null) {
-			for (BoneType offset : config.affectedOffsets) {
+		if (computeOffsets && autoUpdateOffsets && config.affectedBones != null) {
+			for (BoneType offset : config.affectedBones) {
 				computeNodeOffset(offset);
 			}
 		}
@@ -274,17 +274,10 @@ public class SkeletonConfig {
 				setNodeOffset(nodeOffset, 0, 0, -getConfig(SkeletonConfigValue.SKELETON_OFFSET));
 				break;
 			case WAIST:
-				setNodeOffset(
-					nodeOffset,
-					0,
-					(getConfig(SkeletonConfigValue.CHEST)
-						- getConfig(SkeletonConfigValue.TORSO)
-						+ getConfig(SkeletonConfigValue.WAIST)),
-					0
-				);
+				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.WAIST), 0);
 				break;
 			case HIP:
-				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.WAIST), 0);
+				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.HIP), 0);
 				break;
 			case HIP_TRACKER:
 				setNodeOffset(
@@ -301,25 +294,28 @@ public class SkeletonConfig {
 				setNodeOffset(nodeOffset, getConfig(SkeletonConfigValue.HIPS_WIDTH) / 2f, 0, 0);
 				break;
 			case LEFT_UPPER_LEG:
+				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.LEFT_UPPER_LEG), 0);
+				break;
 			case RIGHT_UPPER_LEG:
-				setNodeOffset(
-					nodeOffset,
-					0,
-					-(getConfig(SkeletonConfigValue.LEGS_LENGTH)
-						- getConfig(SkeletonConfigValue.KNEE_HEIGHT)),
-					0
-				);
+				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.RIGHT_UPPER_LEG), 0);
 				break;
 			case LEFT_KNEE_TRACKER:
 			case RIGHT_KNEE_TRACKER:
 				setNodeOffset(nodeOffset, 0, 0, -getConfig(SkeletonConfigValue.SKELETON_OFFSET));
 				break;
 			case LEFT_LOWER_LEG:
+				setNodeOffset(
+					nodeOffset,
+					0,
+					-getConfig(SkeletonConfigValue.LEFT_LOWER_LEG),
+					-getConfig(SkeletonConfigValue.FOOT_SHIFT)
+				);
+				break;
 			case RIGHT_LOWER_LEG:
 				setNodeOffset(
 					nodeOffset,
 					0,
-					-getConfig(SkeletonConfigValue.KNEE_HEIGHT),
+					-getConfig(SkeletonConfigValue.RIGHT_LOWER_LEG),
 					-getConfig(SkeletonConfigValue.FOOT_SHIFT)
 				);
 				break;
@@ -336,8 +332,8 @@ public class SkeletonConfig {
 				setNodeOffset(
 					nodeOffset,
 					0,
-					getConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Y),
-					getConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Z)
+					getConfig(SkeletonConfigValue.CONTROLLER_Y),
+					getConfig(SkeletonConfigValue.CONTROLLER_Z)
 				);
 				break;
 			case LEFT_HAND:
@@ -345,13 +341,13 @@ public class SkeletonConfig {
 				setNodeOffset(
 					nodeOffset,
 					0,
-					-getConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Y),
-					-getConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Z)
+					-getConfig(SkeletonConfigValue.CONTROLLER_Y),
+					-getConfig(SkeletonConfigValue.CONTROLLER_Z)
 				);
 				break;
 			case LEFT_LOWER_ARM:
 			case RIGHT_LOWER_ARM:
-				setNodeOffset(nodeOffset, 0, getConfig(SkeletonConfigValue.LOWER_ARM_LENGTH), 0);
+				setNodeOffset(nodeOffset, 0, getConfig(SkeletonConfigValue.LOWER_ARM), 0);
 				break;
 			case LEFT_ELBOW_TRACKER:
 			case RIGHT_ELBOW_TRACKER:
@@ -359,7 +355,7 @@ public class SkeletonConfig {
 				break;
 			case LEFT_UPPER_ARM:
 			case RIGHT_UPPER_ARM:
-				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.UPPER_ARM_LENGTH), 0);
+				setNodeOffset(nodeOffset, 0, -getConfig(SkeletonConfigValue.UPPER_ARM), 0);
 				break;
 			case LEFT_SHOULDER:
 				setNodeOffset(

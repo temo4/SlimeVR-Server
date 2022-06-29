@@ -65,17 +65,7 @@ public class SkeletonConfigGUI extends EJBagNoStretch {
 				add(new SkeletonLabel(config), c(2, row, 2));
 				add(new AdjButton("-", config, true), c(3, row, 2));
 
-				// Only use a timer on configs that need time to get into
-				// position for
-				switch (config) {
-					case TORSO:
-					case LEGS_LENGTH:
-						add(new TimedResetButton("Reset", config), c(4, row, 2));
-						break;
-					default:
-						add(new ResetButton("Reset", config), c(4, row, 2));
-						break;
-				}
+				add(new ResetButton("Reset", config), c(4, row, 2));
 
 				row++;
 			}

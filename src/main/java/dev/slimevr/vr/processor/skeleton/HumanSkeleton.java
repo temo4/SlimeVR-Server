@@ -133,6 +133,9 @@ public class HumanSkeleton extends Skeleton implements SkeletonConfigCallback {
 	protected boolean hasKneeTrackers;
 	static final Quaternion FORWARD_QUATERNION = new Quaternion()
 		.fromAngles(FastMath.HALF_PI, 0, 0);
+	static final float UPPER_BODY_PROPORTION = 0.42f;
+	static final float CHEST_PROPORTION = 0.57f;
+	static final float UPPER_LEGS_PROPORTION = 0.45f;
 	static final float FLOOR_OFFSET = 0.05f;
 	// #region Tracker Input
 	protected Tracker hmdTracker;
@@ -1406,51 +1409,45 @@ public class HumanSkeleton extends Skeleton implements SkeletonConfigCallback {
 		switch (config) {
 			case HEAD:
 				headNode.update();
-				updateComputedTrackers();
 				break;
 			case NECK:
 				neckNode.update();
-				updateComputedTrackers();
-				break;
-			case TORSO:
-				hipNode.update();
-				updateComputedTrackers();
 				break;
 			case CHEST:
 				chestNode.update();
-				updateComputedTrackers();
 				break;
 			case WAIST:
 				waistNode.update();
-				updateComputedTrackers();
+				break;
+			case HIP:
+				hipNode.update();
 				break;
 			case HIP_OFFSET:
 				trackerWaistNode.update();
-				updateComputedTrackers();
 				break;
 			case HIPS_WIDTH:
 				leftHipNode.update();
 				rightHipNode.update();
-				updateComputedTrackers();
 				break;
-			case KNEE_HEIGHT:
+			case LEFT_UPPER_LEG:
 				leftKneeNode.update();
+				break;
+			case RIGHT_UPPER_LEG:
 				rightKneeNode.update();
 				break;
-			case LEGS_LENGTH:
-				leftKneeNode.update();
-				rightKneeNode.update();
-				updateComputedTrackers();
+			case LEFT_LOWER_LEG:
+				leftAnkleNode.update();
+				break;
+			case RIGHT_LOWER_LEG:
+				rightAnkleNode.update();
 				break;
 			case FOOT_LENGTH:
 				leftFootNode.update();
 				rightFootNode.update();
-				updateComputedTrackers();
 				break;
 			case FOOT_SHIFT:
 				leftAnkleNode.update();
 				rightAnkleNode.update();
-				updateComputedTrackers();
 				break;
 			case SKELETON_OFFSET:
 				trackerChestNode.update();
@@ -1459,40 +1456,36 @@ public class HumanSkeleton extends Skeleton implements SkeletonConfigCallback {
 				trackerRightKneeNode.update();
 				trackerLeftFootNode.update();
 				trackerRightFootNode.update();
-				updateComputedTrackers();
 				break;
-			case CONTROLLER_DISTANCE_Z:
-			case CONTROLLER_DISTANCE_Y:
+			case CONTROLLER_Z:
+			case CONTROLLER_Y:
 				leftWristNodeContrl.update();
 				rightWristNodeContrl.update();
-				updateComputedTrackers();
 				break;
-			case LOWER_ARM_LENGTH:
+			case LOWER_ARM:
 				leftElbowNodeContrl.update();
 				rightElbowNodeContrl.update();
 				leftElbowNodeHmd.update();
 				rightElbowNodeHmd.update();
-				updateComputedTrackers();
 				break;
 			case ELBOW_OFFSET:
 				trackerLeftElbowNodeContrl.update();
 				trackerRightElbowNodeContrl.update();
 				trackerLeftElbowNodeHmd.update();
 				trackerRightElbowNodeHmd.update();
-				updateComputedTrackers();
 				break;
 			case SHOULDERS_DISTANCE:
 			case SHOULDERS_WIDTH:
 				leftShoulderNodeHmd.update();
 				rightShoulderNodeHmd.update();
-				updateComputedTrackers();
 				break;
-			case UPPER_ARM_LENGTH:
+			case UPPER_ARM:
 				leftElbowNodeHmd.update();
 				rightElbowNodeHmd.update();
-				updateComputedTrackers();
 				break;
 		}
+
+		updateComputedTrackers();
 	}
 	// #endregion
 
@@ -1533,100 +1526,134 @@ public class HumanSkeleton extends Skeleton implements SkeletonConfigCallback {
 		float height;
 		switch (config) {
 			case HEAD:
-				skeletonConfig.setConfig(SkeletonConfigValue.HEAD, null);
+				skeletonConfig.setConfig(config, null);
 				break;
 			case NECK:
-				skeletonConfig.setConfig(SkeletonConfigValue.NECK, null);
+				skeletonConfig.setConfig(config, null);
 				break;
-			case TORSO: // Distance from shoulders to hip (full torso length)
+			case CHEST:
 				vec = new Vector3f();
 				hmdTracker.getPosition(vec);
 				height = vec.y;
-				if (height > 0.5f) { // Reset only if floor level seems right,
-										// TODO: read floor level from SteamVR
+
+				// Reset only if floor level seems right,
+				// TODO: read floor level from SteamVR
+				if (height > 0.5f) {
+					float upperBody = (height * UPPER_BODY_PROPORTION)
+						- skeletonConfig.getConfig(SkeletonConfigValue.NECK);
+
 					skeletonConfig
-						.setConfig(
-							SkeletonConfigValue.TORSO,
-							((height) * 0.42f) - skeletonConfig.getConfig(SkeletonConfigValue.NECK)
-						);
-				} else// if floor level is incorrect
-				{
-					skeletonConfig.setConfig(SkeletonConfigValue.TORSO, null);
+						.setConfig(config, upperBody * CHEST_PROPORTION);
+				} else { // if floor level is incorrect
+					skeletonConfig.setConfig(config, null);
 				}
 				break;
-			case CHEST: // Chest is 57% of the upper body by default (shoulders
-						// to chest)
-				skeletonConfig
-					.setConfig(
-						SkeletonConfigValue.CHEST,
-						skeletonConfig.getConfig(SkeletonConfigValue.TORSO) * 0.57f
-					);
-				break;
-			case WAIST: // Waist length is from hip to waist
-				skeletonConfig.setConfig(SkeletonConfigValue.WAIST, null);
-				break;
-			case HIP_OFFSET:
-				skeletonConfig.setConfig(SkeletonConfigValue.HIP_OFFSET, null);
-				break;
-			case HIPS_WIDTH:
-				skeletonConfig.setConfig(SkeletonConfigValue.HIPS_WIDTH, null);
-				break;
-			case FOOT_LENGTH:
-				skeletonConfig.setConfig(SkeletonConfigValue.FOOT_LENGTH, null);
-				break;
-			case FOOT_SHIFT:
-				skeletonConfig.setConfig(SkeletonConfigValue.FOOT_SHIFT, null);
-				break;
-			case SKELETON_OFFSET:
-				skeletonConfig.setConfig(SkeletonConfigValue.SKELETON_OFFSET, null);
-				break;
-			case LEGS_LENGTH: // Set legs length to be 5cm above floor level
+			case WAIST:
 				vec = new Vector3f();
 				hmdTracker.getPosition(vec);
 				height = vec.y;
-				if (height > 0.5f) { // Reset only if floor level seems right,
-										// TODO: read floor level from SteamVR
+
+				// Reset only if floor level seems right,
+				// TODO: read floor level from SteamVR
+				if (height > 0.5f) {
+					float upperBody = (height * UPPER_BODY_PROPORTION)
+						- skeletonConfig.getConfig(SkeletonConfigValue.NECK);
+
 					skeletonConfig
 						.setConfig(
-							SkeletonConfigValue.LEGS_LENGTH,
-							height
-								- skeletonConfig.getConfig(SkeletonConfigValue.NECK)
-								- skeletonConfig.getConfig(SkeletonConfigValue.TORSO)
-								- FLOOR_OFFSET
+							config,
+							upperBody
+								- skeletonConfig.getConfig(SkeletonConfigValue.CHEST)
+								- skeletonConfig.getConfig(SkeletonConfigValue.HIP)
+						);
+				} else { // if floor level is incorrect
+					skeletonConfig.setConfig(config, null);
+				}
+				break;
+			case HIP:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case HIP_OFFSET:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case HIPS_WIDTH:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case FOOT_LENGTH:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case FOOT_SHIFT:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case SKELETON_OFFSET:
+				skeletonConfig.setConfig(config, null);
+				break;
+			case LEFT_UPPER_LEG:
+			case RIGHT_UPPER_LEG:
+				vec = new Vector3f();
+				hmdTracker.getPosition(vec);
+				height = vec.y;
+
+				// Reset only if floor level seems right,
+				// TODO: read floor level from SteamVR
+				if (height > 0.5f) {
+					float lowerBody = (height * (1f - UPPER_BODY_PROPORTION))
+						- skeletonConfig.getConfig(SkeletonConfigValue.NECK)
+						- FLOOR_OFFSET;
+
+					skeletonConfig
+						.setConfig(
+							config,
+							lowerBody * UPPER_LEGS_PROPORTION
 						);
 				} else // if floor level is incorrect
 				{
-					skeletonConfig.setConfig(SkeletonConfigValue.LEGS_LENGTH, null);
+					skeletonConfig.setConfig(config, null);
 				}
-				resetSkeletonConfig(SkeletonConfigValue.KNEE_HEIGHT);
 				break;
-			case KNEE_HEIGHT: // Knees are at 55% of the legs by default
-				skeletonConfig
-					.setConfig(
-						SkeletonConfigValue.KNEE_HEIGHT,
-						skeletonConfig.getConfig(SkeletonConfigValue.LEGS_LENGTH) * 0.55f
-					);
+			case LEFT_LOWER_LEG:
+			case RIGHT_LOWER_LEG:
+				vec = new Vector3f();
+				hmdTracker.getPosition(vec);
+				height = vec.y;
+
+				// Reset only if floor level seems right,
+				// TODO: read floor level from SteamVR
+				if (height > 0.5f) {
+					float lowerBody = (height * (1f - UPPER_BODY_PROPORTION))
+						- skeletonConfig.getConfig(SkeletonConfigValue.NECK)
+						- FLOOR_OFFSET;
+
+					skeletonConfig
+						.setConfig(
+							config,
+							lowerBody * (1 - UPPER_LEGS_PROPORTION)
+						);
+				} else // if floor level is incorrect
+				{
+					skeletonConfig.setConfig(config, null);
+				}
 				break;
-			case CONTROLLER_DISTANCE_Z:
-				skeletonConfig.setConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Z, null);
+			case CONTROLLER_Z:
+				skeletonConfig.setConfig(config, null);
 				break;
-			case CONTROLLER_DISTANCE_Y:
-				skeletonConfig.setConfig(SkeletonConfigValue.CONTROLLER_DISTANCE_Y, null);
+			case CONTROLLER_Y:
+				skeletonConfig.setConfig(config, null);
 				break;
-			case LOWER_ARM_LENGTH:
-				skeletonConfig.setConfig(SkeletonConfigValue.LOWER_ARM_LENGTH, null);
+			case LOWER_ARM:
+				skeletonConfig.setConfig(config, null);
 				break;
 			case ELBOW_OFFSET:
-				skeletonConfig.setConfig(SkeletonConfigValue.ELBOW_OFFSET, null);
+				skeletonConfig.setConfig(config, null);
 				break;
 			case SHOULDERS_DISTANCE:
-				skeletonConfig.setConfig(SkeletonConfigValue.SHOULDERS_DISTANCE, null);
+				skeletonConfig.setConfig(config, null);
 				break;
 			case SHOULDERS_WIDTH:
-				skeletonConfig.setConfig(SkeletonConfigValue.SHOULDERS_WIDTH, null);
+				skeletonConfig.setConfig(config, null);
 				break;
-			case UPPER_ARM_LENGTH:
-				skeletonConfig.setConfig(SkeletonConfigValue.UPPER_ARM_LENGTH, null);
+			case UPPER_ARM:
+				skeletonConfig.setConfig(config, null);
 				break;
 		}
 	}
