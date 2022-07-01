@@ -7,9 +7,9 @@ import java.util.Map;
 public enum SkeletonConfigValue {
 	HEAD(
 		1,
-		"Head",
-		"headShift",
-		"Head shift",
+		"Hmd",
+		"hmdDistance",
+		"HMD distance",
 		0.1f,
 		new BoneType[] { BoneType.HEAD }
 	),
