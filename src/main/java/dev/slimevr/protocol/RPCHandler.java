@@ -9,12 +9,17 @@ import dev.slimevr.autobone.AutoBoneProcessType;
 import dev.slimevr.platform.windows.WindowsNamedPipeBridge;
 import dev.slimevr.poserecorder.PoseFrames;
 import dev.slimevr.serial.SerialListener;
-import dev.slimevr.vr.processor.skeleton.SkeletonConfigValue;
+import dev.slimevr.vr.processor.skeleton.SkeletonConfigOffsets;
+import dev.slimevr.vr.processor.skeleton.SkeletonConfigToggles;
+import dev.slimevr.vr.processor.skeleton.SkeletonConfigValues;
 import dev.slimevr.vr.trackers.*;
 import io.eiren.util.logging.LogManager;
 import solarxr_protocol.MessageBundle;
 import solarxr_protocol.datatypes.TransactionId;
 import solarxr_protocol.rpc.*;
+import solarxr_protocol.rpc.settings.ModelRatios;
+import solarxr_protocol.rpc.settings.ModelSettings;
+import solarxr_protocol.rpc.settings.ModelToggles;
 
 import java.util.EnumMap;
 import java.util.Map.Entry;
@@ -146,7 +151,7 @@ public class RPCHandler extends ProtocolHandler<RpcMessageHeader>
 		if (req == null)
 			return;
 
-		SkeletonConfigValue joint = SkeletonConfigValue.getById(req.bone());
+		SkeletonConfigOffsets joint = SkeletonConfigOffsets.getById(req.bone());
 
 		this.api.server.humanPoseProcessor.setSkeletonConfig(joint, req.value());
 		this.api.server.humanPoseProcessor.getSkeletonConfig().saveToConfig(this.api.server.config);
@@ -246,13 +251,49 @@ public class RPCHandler extends ProtocolHandler<RpcMessageHeader>
 		int filterSettings = FilteringSettings
 			.createFilteringSettings(
 				fbb,
-				TrackerFilters.valueOf(this.api.server.config.getString("filters.type", "NONE")).id,
-				(int) (this.api.server.config.getFloat("filters.amount", 0.3f) * 100),
-				this.api.server.config.getInt("filters.tickCount", 1)
+				TrackerFilters
+					.valueOf(
+						this.api.server.config
+							.getString(TrackerFiltering.CONFIG_PREFIX + "type", "NONE")
+					).id,
+				(int) (this.api.server.config
+					.getFloat(
+						TrackerFiltering.CONFIG_PREFIX + "amount",
+						TrackerFiltering.DEFAULT_INTENSITY
+					) * 100),
+				this.api.server.config
+					.getInt(
+						TrackerFiltering.CONFIG_PREFIX + "tickCount",
+						TrackerFiltering.DEFAULT_TICK
+					)
 			);
 
+		int modelSettings;
+		{
+			var config = this.api.server.humanPoseProcessor.getSkeletonConfig();
+			int togglesOffset = ModelToggles
+				.createModelToggles(
+					fbb,
+					config.getToggle(SkeletonConfigToggles.EXTENDED_SPINE_MODEL),
+					config.getToggle(SkeletonConfigToggles.EXTENDED_PELVIS_MODEL),
+					config.getToggle(SkeletonConfigToggles.EXTENDED_KNEE_MODEL),
+					config.getToggle(SkeletonConfigToggles.FORCE_ARMS_FROM_HMD)
+				);
+			int ratiosOffset = ModelRatios
+				.createModelRatios(
+					fbb,
+					config.getValue(SkeletonConfigValues.WAIST_FROM_CHEST_HIP_AVERAGING),
+					config.getValue(SkeletonConfigValues.WAIST_FROM_CHEST_LEGS_AVERAGING),
+					config.getValue(SkeletonConfigValues.HIP_FROM_CHEST_LEGS_AVERAGING),
+					config.getValue(SkeletonConfigValues.HIP_FROM_WAIST_LEGS_AVERAGING),
+					config.getValue(SkeletonConfigValues.HIP_LEGS_AVERAGING),
+					config.getValue(SkeletonConfigValues.KNEE_TRACKER_ANKLE_AVERAGING)
+				);
+			modelSettings = ModelSettings.createModelSettings(fbb, togglesOffset, ratiosOffset);
+		}
+
 		int settings = SettingsResponse
-			.createSettingsResponse(fbb, steamvrTrackerSettings, filterSettings);
+			.createSettingsResponse(fbb, steamvrTrackerSettings, filterSettings, modelSettings);
 		int outbound = createRPCMessage(fbb, RpcMessage.SettingsResponse, settings);
 		fbb.finish(outbound);
 		conn.send(fbb.dataBuffer());
@@ -284,11 +325,98 @@ public class RPCHandler extends ProtocolHandler<RpcMessageHeader>
 				this.api.server
 					.updateTrackersFilters(
 						type,
-						(float) req.filtering().intensity() / 100.0f,
+						req.filtering().intensity() / 100.0f,
 						req.filtering().ticks()
 					);
 			}
 		}
+
+		var modelSettings = req.modelSettings();
+		if (modelSettings != null) {
+			var cfg = this.api.server.humanPoseProcessor.getSkeletonConfig();
+			var toggles = modelSettings.toggles();
+			var ratios = modelSettings.ratios();
+
+			if (toggles != null) {
+				if (toggles.hasExtendedSpine()) {
+					cfg
+						.setToggle(
+							SkeletonConfigToggles.EXTENDED_SPINE_MODEL,
+							toggles.extendedSpine()
+						);
+				}
+				if (toggles.hasExtendedPelvis()) {
+					cfg
+						.setToggle(
+							SkeletonConfigToggles.EXTENDED_PELVIS_MODEL,
+							toggles.extendedPelvis()
+						);
+				}
+				if (toggles.hasExtendedKnee()) {
+					cfg
+						.setToggle(
+							SkeletonConfigToggles.EXTENDED_KNEE_MODEL,
+							toggles.extendedKnee()
+						);
+				}
+				if (toggles.forceArmsFromHmd()) {
+					cfg
+						.setToggle(
+							SkeletonConfigToggles.FORCE_ARMS_FROM_HMD,
+							toggles.forceArmsFromHmd()
+						);
+				}
+			}
+
+			if (ratios != null) {
+				if (ratios.hasImputeWaistFromChestHip()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.WAIST_FROM_CHEST_HIP_AVERAGING,
+							ratios.imputeWaistFromChestHip()
+						);
+				}
+				if (ratios.hasImputeWaistFromChestLegs()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.WAIST_FROM_CHEST_LEGS_AVERAGING,
+							ratios.imputeWaistFromChestLegs()
+						);
+				}
+				if (ratios.hasImputeHipFromChestLegs()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.HIP_FROM_CHEST_LEGS_AVERAGING,
+							ratios.imputeHipFromChestLegs()
+						);
+				}
+				if (ratios.hasImputeHipFromWaistLegs()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.HIP_FROM_WAIST_LEGS_AVERAGING,
+							ratios.imputeHipFromWaistLegs()
+						);
+				}
+				if (ratios.hasInterpHipLegs()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.HIP_LEGS_AVERAGING,
+							ratios.interpHipLegs()
+						);
+				}
+				if (ratios.hasInterpKneeTrackerAnkle()) {
+					cfg
+						.setValue(
+							SkeletonConfigValues.KNEE_TRACKER_ANKLE_AVERAGING,
+							ratios.interpKneeTrackerAnkle()
+						);
+				}
+			}
+
+			cfg.saveToConfig(this.api.server.config);
+			this.api.server.saveConfig();
+		}
+
 	}
 
 	@Override
@@ -457,7 +585,7 @@ public class RPCHandler extends ProtocolHandler<RpcMessageHeader>
 					int[] skeletonPartOffsets = new int[epoch.configValues.size()];
 					int i = 0;
 					for (
-						Entry<SkeletonConfigValue, Float> skeletonConfig : epoch.configValues
+						Entry<SkeletonConfigOffsets, Float> skeletonConfig : epoch.configValues
 							.entrySet()
 					) {
 						skeletonPartOffsets[i++] = SkeletonPart
@@ -490,7 +618,7 @@ public class RPCHandler extends ProtocolHandler<RpcMessageHeader>
 
 
 	@Override
-	public void onAutoBoneEnd(EnumMap<SkeletonConfigValue, Float> configValues) {
+	public void onAutoBoneEnd(EnumMap<SkeletonConfigOffsets, Float> configValues) {
 		// Do nothing, the last epoch from "onAutoBoneEpoch" should be all
 		// that's needed
 	}
