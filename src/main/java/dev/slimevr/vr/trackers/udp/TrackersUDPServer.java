@@ -1,8 +1,6 @@
 package dev.slimevr.vr.trackers.udp;
 
-import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
 import dev.slimevr.Main;
 import dev.slimevr.NetworkProtocol;
 import dev.slimevr.vr.trackers.IMUTracker;
@@ -26,13 +24,6 @@ import java.util.function.Consumer;
  * Receives trackers data by UDP using extended owoTrack protocol.
  */
 public class TrackersUDPServer extends Thread {
-
-	/**
-	 * Change between IMU axes and OpenGL/SteamVR axes
-	 */
-	private static final Quaternion offset = new Quaternion()
-		.fromAngleAxis(-FastMath.HALF_PI, Vector3f.UNIT_X);
-
 	private final Quaternion buf = new Quaternion();
 	private final Random random = new Random();
 	private final List<UDPDevice> connections = new FastList<>();
@@ -386,7 +377,6 @@ public class TrackersUDPServer extends Thread {
 					break;
 				UDPPacket1Rotation rotationPacket = (UDPPacket1Rotation) packet;
 				buf.set(rotationPacket.rotation);
-				offset.mult(buf, buf);
 				tracker = connection.getTracker(rotationPacket.getSensorId());
 				if (tracker == null)
 					break;
@@ -401,7 +391,6 @@ public class TrackersUDPServer extends Thread {
 				if (tracker == null)
 					break;
 				buf.set(rotationData.rotation);
-				offset.mult(buf, buf);
 
 				switch (rotationData.dataType) {
 					case UDPPacket17RotationData.DATA_TYPE_NORMAL:
