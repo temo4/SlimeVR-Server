@@ -98,7 +98,7 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 	}
 
 	protected void adjustInternal(Quaternion store) {
-		// axesOffset.mult(store, store);
+		axesOffset.mult(store, store);
 		gyroFix.mult(store, store);
 		store.multLocal(attachmentFix);
 		yawFix.mult(store, store);
