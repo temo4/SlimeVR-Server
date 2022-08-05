@@ -12,6 +12,7 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 	public final Quaternion yawFix = new Quaternion();
 	public final Quaternion gyroFix = new Quaternion();
 	public final Quaternion attachmentFix = new Quaternion();
+	public final Quaternion rollFix = new Quaternion();
 	protected float confidenceMultiplier = 1.0f;
 	/**
 	 * Changes between IMU axes and OpenGL/SteamVR axes
@@ -48,13 +49,13 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 	@Override
 	public void resetFull(Quaternion reference) {
 		tracker.resetFull(reference);
-		fixGyroscope();
 
 		Quaternion sensorRotation = new Quaternion();
 		tracker.getRotation(sensorRotation);
-		axesOffset.mult(sensorRotation, sensorRotation);
-		gyroFix.mult(sensorRotation, sensorRotation);
-		attachmentFix.set(sensorRotation).inverseLocal();
+
+		fixRoll(sensorRotation.clone());
+		fixGyroscope(sensorRotation.clone());
+		fixAttachment(sensorRotation.clone());
 
 		fixYaw(reference);
 	}
@@ -78,6 +79,7 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 
 		Quaternion sensorRotation = new Quaternion();
 		tracker.getRotation(sensorRotation);
+		rollFix.mult(sensorRotation, sensorRotation);
 		axesOffset.mult(sensorRotation, sensorRotation);
 		gyroFix.mult(sensorRotation, sensorRotation);
 		sensorRotation.multLocal(attachmentFix);
@@ -87,9 +89,14 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 		yawFix.set(sensorRotation).inverseLocal().multLocal(targetRotation);
 	}
 
-	private void fixGyroscope() {
-		Quaternion sensorRotation = new Quaternion();
-		tracker.getRotation(sensorRotation);
+	private void fixRoll(Quaternion sensorRotation) {
+		rollFix.set(sensorRotation).inverseLocal();
+		axesOffset.mult(rollFix, rollFix);
+		rollFix.fromAngles(0, 0, rollFix.getRoll());
+	}
+
+	private void fixGyroscope(Quaternion sensorRotation) {
+		rollFix.mult(sensorRotation, sensorRotation);
 		axesOffset.mult(sensorRotation, sensorRotation);
 
 		sensorRotation.fromAngles(0, sensorRotation.getYaw(), 0);
@@ -97,7 +104,16 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 		gyroFix.set(sensorRotation).inverseLocal();
 	}
 
+	private void fixAttachment(Quaternion sensorRotation) {
+		rollFix.mult(sensorRotation, sensorRotation);
+		axesOffset.mult(sensorRotation, sensorRotation);
+
+		gyroFix.mult(sensorRotation, sensorRotation);
+		attachmentFix.set(sensorRotation).inverseLocal();
+	}
+
 	protected void adjustInternal(Quaternion store) {
+		rollFix.mult(store, store);
 		axesOffset.mult(store, store);
 		gyroFix.mult(store, store);
 		store.multLocal(attachmentFix);
