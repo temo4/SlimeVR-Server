@@ -91,7 +91,6 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 
 	private void fixRoll(Quaternion sensorRotation) {
 		rollFix.set(sensorRotation).inverseLocal();
-		axesOffset.mult(rollFix, rollFix);
 		rollFix.fromAngles(0, 0, rollFix.getRoll());
 	}
 
