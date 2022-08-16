@@ -3,6 +3,7 @@ package dev.slimevr.vr.trackers;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import dev.slimevr.config.TrackerConfig;
 import dev.slimevr.vr.Device;
 
 
@@ -30,13 +31,13 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 	}
 
 	@Override
-	public void loadConfig(TrackerConfig config) {
-		this.tracker.loadConfig(config);
+	public void readConfig(TrackerConfig config) {
+		this.tracker.readConfig(config);
 	}
 
 	@Override
-	public void saveConfig(TrackerConfig config) {
-		this.tracker.saveConfig(config);
+	public void writeConfig(TrackerConfig config) {
+		this.tracker.writeConfig(config);
 	}
 
 	/**
@@ -133,7 +134,7 @@ public class ReferenceAdjustedTracker<E extends Tracker> implements Tracker {
 
 	@Override
 	public String getName() {
-		return tracker.getName() + "/adj";
+		return tracker.getName();
 	}
 
 	@Override
