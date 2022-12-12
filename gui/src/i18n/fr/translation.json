@@ -4,8 +4,8 @@
     "connection-lost": "Connexion avec le serveur perdu. Reconnexion..."
   },
   "tips": {
-    "find-tracker": "Vous n'arrivez pas à identifier quel capteur est lequel? Bouge le capteur pour qu'il s'affiche",
-    "do-not-move-heels": "Faites attention à ne pas bouger vos pieds pendant la calibration !"
+    "find-tracker": "Impossible de différencier vos capteurs? Bougez les pour qu'ils brillent à l'écran.",
+    "do-not-move-heels": "Faites attention à ne pas bouger vos pieds pendant la calibration!"
   },
   "body-part": {
     "NONE": "Non assigné",
@@ -60,7 +60,7 @@
   "serial-detection": {
     "new-device.p0": "Nouveau périphérique détecté!",
     "new-device.p1": "Entrez vos identifiants wifi!",
-    "new-device.p2": "Veuillez sélectionner ce que vous voulez en faire",
+    "new-device.p2": "Veuillez sélectionner quoi en faire",
     "open-wifi": "Connectez-vous au Wi-Fi",
     "open-serial": "Ouvrir la console série",
     "submit": "Soumettre!",
@@ -139,8 +139,8 @@
     }
   },
   "body-assignment-menu": {
-    "title": "Où voulez-vous que ce capteur soit assigné ?",
-    "description": "Choisissez un emplacement où vous souhaitez que ce capteur soit affecté. ",
+    "title": "Où est-ce que ce capteur devrait être assigné?",
+    "description": "Choisissez où assigner le capteur",
     "show-advanced-locations": "Afficher les emplacements d'attribution avancés",
     "manage-trackers": "Gérer tous les capteurs",
     "unassign-tracker": "Ne pas attribuer"
@@ -152,7 +152,7 @@
     "dont-assign": "Ne pas attribuer"
   },
   "mounting-selection-menu": {
-    "title": "Où voulez-vous que ce capteur soit?",
+    "title": "Quelle direction pointe capteur?",
     "close": "Fermer"
   },
   "settings": {
@@ -238,16 +238,16 @@
         "title": "Interface",
         "dev-mode": {
           "title": "Mode développeur",
-          "description": "Ce mode peut être utile si vous avez besoin de données approfondies ou pour interagir avec des capteurs connectés à un niveau plus avancé",
+          "description": "Ce mode peut être utile pour avoir des données approfondies ou pour interagir avec des capteurs connectés à un niveau plus avancé",
           "label": "Mode développeur"
         },
         "serial-detection": {
           "title": "Détection de périphérique série",
-          "description": "Cette option affichera une fenêtre chaque fois que vous branchez un nouveau périphérique série qui pourrait être un capteur.",
+          "description": "Cette option affichera une fenêtre chaque fois qu'un nouveau périphérique série qui pourrait être un capteur est connecté.",
           "label": "Détection de périphérique série"
         },
         "lang": {
-          "title": "Selectionner la language",
+          "title": "Selectionner la langue",
           "description": "Choisir la langue par default",
           "placeholder": "Choisissez la langue"
         }
@@ -256,7 +256,7 @@
     "serial": {
       "title": "Console série",
       "description.p0": "Il s'agit d'un flux d'informations en direct pour la communication série.",
-      "description.p1": "Peut être utile si vous avez besoin de savoir que capteur fonctionne correctement.",
+      "description.p1": "Peut être utile pour savoir si un capteur fonctionne correctement.",
       "connection-lost": "Connexion à l'appareil perdue, reconnexion...",
       "reboot": "Redémarrer",
       "factory-reset": "Remise à zéro",
@@ -338,7 +338,7 @@
       "back": "Retour à l'introduction",
       "title": "Saisir les identifiants WiFi",
       "description.p0": "Les capteurs utiliseront ces informations d'identification pour se connecter au WiFi",
-      "description.p1": "veuillez utiliser les identifiants auxquels vous êtes actuellement connecté",
+      "description.p1": "Veuillez utiliser les identifiants auxquels vous êtes actuellement connecté",
       "skip": "Ignorer les paramètres Wi-Fi",
       "submit": "Valider"
     },
@@ -360,7 +360,7 @@
       "ready": "je suis prêt!"
     },
     "done": {
-      "title": "Vous êtes prêt !",
+      "title": "Vous êtes prêt!",
       "description": "Amusez-vous bien :)",
       "close": "Fermer le guide"
     },
@@ -426,8 +426,8 @@
       },
       "put-trackers-on": {
         "title": "Enfilez vos capteurs",
-        "description": "Pour calibrer les rotations de montage, nous allons utiliser les capteurs que vous venez d'affecter.",
-        "next": "J'ai tous mes capteurs allumés"
+        "description": "Pour calibrer le montage, nous allons utiliser les capteurs que vous venez d'affecter.",
+        "next": "J'ai tous mes capteurs"
       }
     },
     "manual-proportions": {
@@ -445,7 +445,7 @@
       "put-trackers-on": {
         "title": "Enfilez vos capteurs",
         "description": "Pour calibrer vos proportions, nous allons utiliser les capteurs que vous venez d'assigner.",
-        "next": "J'ai tous mes capteurs allumés"
+        "next": "J'ai tous mes capteurs"
       },
       "preparation": {
         "title": "Préparation",
