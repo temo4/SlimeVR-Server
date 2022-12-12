@@ -35,6 +35,8 @@ public class IMUTracker
 	protected final String descriptiveName;
 	protected final TrackersUDPServer server;
 	protected final VRServer vrserver;
+	protected final Quaternion lastResetQuat = new Quaternion();
+	protected final Quaternion driftQuat = new Quaternion();
 	public int calibrationStatus = 0;
 	public int magCalibrationStatus = 0;
 	public float magnetometerAccuracy = 0;
@@ -52,6 +54,7 @@ public class IMUTracker
 	protected boolean magnetometerCalibrated = false;
 	protected BufferedTimer timer = new BufferedTimer(1f);
 	protected QuaternionMovingAverage movingAverage;
+	protected float timeAtLastReset;
 
 	public IMUTracker(
 		UDPDevice device,
@@ -86,8 +89,7 @@ public class IMUTracker
 	@Override
 	public void readConfig(TrackerConfig config) {
 		// Loading a config is an act of user editing, therefore it shouldn't
-		// not be
-		// allowed if editing is not allowed
+		// be allowed if editing is not allowed
 		if (userEditable()) {
 			setCustomName(config.getCustomName());
 
@@ -189,6 +191,8 @@ public class IMUTracker
 		// prevent
 		// accidental errors while debugging other things
 		store.multLocal(rotAdjust);
+		// TODO find good number/math
+		store.slerpLocal(driftQuat, (System.currentTimeMillis() - timeAtLastReset) / 10000f);
 		return true;
 	}
 
@@ -249,6 +253,7 @@ public class IMUTracker
 
 	@Override
 	public void resetFull(Quaternion reference) {
+		calculateDrift();
 		resetYaw(reference);
 	}
 
@@ -259,6 +264,8 @@ public class IMUTracker
 	 */
 	@Override
 	public void resetYaw(Quaternion reference) {
+		calculateDrift();
+
 		if (magCalibrationStatus >= CalibrationAccuracy.HIGH.status) {
 			magnetometerCalibrated = true;
 			// During calibration set correction to match magnetometer readings
@@ -266,6 +273,17 @@ public class IMUTracker
 			// TODO : Correct only yaw
 			correction.set(rotQuaternion).inverseLocal().multLocal(rotMagQuaternion);
 		}
+	}
+
+	private void calculateDrift() {
+		// TODO add way to get ignore repeated resets and just take most recent
+		// within a time window.
+		timeAtLastReset = System.currentTimeMillis();
+
+		// TODO do gud math
+		rotQuaternion.mult(lastResetQuat.inverse(), driftQuat);
+
+		lastResetQuat.set(rotQuaternion);
 	}
 
 	/**
