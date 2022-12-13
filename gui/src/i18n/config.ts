@@ -5,6 +5,7 @@ import fr from './fr/translation.json';
 import ko from './ko/translation.json';
 import pl from './pl/translation.json';
 import ptBR from './pt-BR/translation.json';
+import ru from './ru/translation.json';
 import vi from './vi/translation.json';
 import zh from './zh/translation.json';
 import owo from './owo/translation.json';
@@ -33,6 +34,11 @@ export const langs = [
     key: 'ptBR',
   },
   {
+    name: 'Russian',
+    key: 'ru',
+  },
+  },
+  {
     name: 'Tiếng Việt',
     key: 'vi',
   },
@@ -43,7 +49,6 @@ export const langs = [
   {
     name: '🥺 Engwish~ OwO',
     key: 'owo',
-  },
 ];
 
 export const resources = {
@@ -62,6 +67,9 @@ export const resources = {
   ptBR: {
     translation: ptBR,
   },
+  ru: {
+    translation: ru,
+  }
   vi: {
     translation: vi,
   },
@@ -70,7 +78,6 @@ export const resources = {
   },
   owo: {
     translation: owo,
-  },
 };
 
 i18next.use(initReactI18next).init({
