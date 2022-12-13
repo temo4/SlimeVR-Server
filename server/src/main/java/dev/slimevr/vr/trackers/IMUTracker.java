@@ -54,7 +54,8 @@ public class IMUTracker
 	protected boolean magnetometerCalibrated = false;
 	protected BufferedTimer timer = new BufferedTimer(1f);
 	protected QuaternionMovingAverage movingAverage;
-	protected float timeAtLastReset;
+	protected long timeAtLastReset;
+	protected float timeForLastReset;
 
 	public IMUTracker(
 		UDPDevice device,
@@ -188,11 +189,18 @@ public class IMUTracker
 			store.set(rotQuaternion);
 		}
 		// correction.mult(store, store); // Correction is not used now to
-		// prevent
-		// accidental errors while debugging other things
+		// prevent accidental errors while debugging other things
 		store.multLocal(rotAdjust);
-		// TODO find good number/math
-		store.slerpLocal(driftQuat, (System.currentTimeMillis() - timeAtLastReset) / 10000f);
+		// TODO before or after rotAdjust?
+		// TODO condition with config
+		if (true) {
+			store
+				.slerpLocal(
+					store.mult(driftQuat),
+					(System.currentTimeMillis() - timeAtLastReset) / timeForLastReset
+				);
+		}
+
 		return true;
 	}
 
@@ -253,7 +261,6 @@ public class IMUTracker
 
 	@Override
 	public void resetFull(Quaternion reference) {
-		calculateDrift();
 		resetYaw(reference);
 	}
 
@@ -275,15 +282,27 @@ public class IMUTracker
 		}
 	}
 
+	/**
+	 * Calculates drift since last reset and store the data related to it in
+	 * driftQuat, timeAtLastReset and timeForLastReset
+	 */
 	private void calculateDrift() {
 		// TODO add way to get ignore repeated resets and just take most recent
 		// within a time window.
+		if (timeAtLastReset > 0) {
+			driftQuat
+				.set(
+					rotQuaternion
+						.fromAngles(0f, rotQuaternion.getYaw(), 0f)
+						.mult(lastResetQuat.fromAngles(0f, lastResetQuat.getYaw(), 0f).inverse())
+				);
+			driftQuat.inverseLocal();
+
+			timeForLastReset = System.currentTimeMillis() - timeAtLastReset;
+		}
+
+		lastResetQuat.set(rotQuaternion.clone());
 		timeAtLastReset = System.currentTimeMillis();
-
-		// TODO do gud math
-		rotQuaternion.mult(lastResetQuat.inverse(), driftQuat);
-
-		lastResetQuat.set(rotQuaternion);
 	}
 
 	/**
