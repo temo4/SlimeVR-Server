@@ -33,6 +33,10 @@ export const langs = [
     key: 'ptBR',
   },
   {
+    name: 'Russian',
+    key: 'ru',
+  },
+  {
     name: 'Tiếng Việt',
     key: 'vi',
   },
@@ -61,6 +65,9 @@ export const resources = {
   },
   ptBR: {
     translation: ptBR,
+  },
+  ru: {
+    translation: ru,
   },
   vi: {
     translation: vi,
